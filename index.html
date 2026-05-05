@@ -6,9 +6,29 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Golf">
-<link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
 <title>Evi vs Josh — Golf Tracker</title>
+<script>
+// Generate emoji app icon dynamically
+(function() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 180;
+  canvas.height = 180;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#2d8a4e';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, 180, 180, 36);
+  ctx.fill();
+  ctx.font = '120px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('⛳', 90, 98);
+  const link = document.createElement('link');
+  link.rel = 'apple-touch-icon';
+  link.href = canvas.toDataURL('image/png');
+  document.head.appendChild(link);
+})();
+</script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
