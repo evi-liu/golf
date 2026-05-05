@@ -232,12 +232,6 @@ header p {
   box-shadow: 0 0 0 3px var(--green-light);
 }
 
-.score-inputs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
 .winner-select {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -475,19 +469,9 @@ header p {
         <input type="hidden" id="game-winner" required>
       </div>
       <div class="form-group">
-        <label>Final Scores (relative to par)</label>
-        <div class="score-inputs">
-          <div>
-            <input type="text" id="score-evi" placeholder="Evi (e.g. -1, E, +3)" required>
-          </div>
-          <div>
-            <input type="text" id="score-josh" placeholder="Josh (e.g. -1, E, +3)" required>
-          </div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Course (optional)</label>
-        <input type="text" id="game-course" placeholder="e.g. Pebble Beach">
+        <label>Score (winner's margin)</label>
+        <input type="text" id="game-score" placeholder="e.g. -1, -3, E" required>
+        <small style="color:var(--text-muted);font-size:0.75rem;margin-top:4px;display:block;">How many strokes the winner won by</small>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
@@ -558,7 +542,6 @@ function render() {
     const day = d.getDate();
     const month = d.toLocaleString('en-US', { month: 'short' });
     const winnerClass = game.winner.toLowerCase();
-    const courseText = game.course ? ` · ${game.course}` : '';
     return `
       <div class="game-card">
         <div class="game-date">
@@ -567,7 +550,7 @@ function render() {
         </div>
         <div class="game-info">
           <div class="game-winner ${winnerClass}">${game.winner} wins</div>
-          <div class="game-score">Evi ${game.scoreEvi} · Josh ${game.scoreJosh}${courseText}</div>
+          <div class="game-score">${game.score}</div>
         </div>
         <button class="game-delete" onclick="deleteGame('${game.id}')" title="Delete">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -604,9 +587,7 @@ function saveGame(e) {
     id: Date.now().toString(),
     date: document.getElementById('game-date').value,
     winner: winner,
-    scoreEvi: document.getElementById('score-evi').value.trim(),
-    scoreJosh: document.getElementById('score-josh').value.trim(),
-    course: document.getElementById('game-course').value.trim()
+    score: document.getElementById('game-score').value.trim()
   };
 
   const games = loadGames();
