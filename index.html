@@ -502,20 +502,28 @@ header p {
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-const STORAGE_KEY = 'evi-josh-golf-tracker';
+const SUPABASE_URL = 'https://dlzdstnyrckyqavmuzvh.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_lm0W8OFgtXJq1ADQFFCc9g_M5-vy58w';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function loadGames() {
-  const data = localStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : [];
-}
+let games = [];
 
-function saveGames(games) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+async function loadGames() {
+  const { data, error } = await supabase
+    .from('games')
+    .select('*')
+    .order('date', { ascending: false });
+  if (error) {
+    console.error('Load error:', error);
+    return;
+  }
+  games = data || [];
+  render();
 }
 
 function render() {
-  const games = loadGames();
   const eviWins = games.filter(g => g.winner === 'Evi').length;
   const joshWins = games.filter(g => g.winner === 'Josh').length;
   const ties = games.filter(g => g.winner === 'Tie').length;
@@ -560,7 +568,7 @@ function render() {
   }
 
   const sorted = [...games].sort((a, b) => new Date(b.date) - new Date(a.date));
-  listEl.innerHTML = sorted.map((game, i) => {
+  listEl.innerHTML = sorted.map((game) => {
     const d = new Date(game.date + 'T12:00:00');
     const day = d.getDate();
     const month = d.toLocaleString('en-US', { month: 'short' });
@@ -576,7 +584,7 @@ function render() {
           <div class="game-winner ${winnerClass}">${winnerText}</div>
           <div class="game-score">${game.score}</div>
         </div>
-        <button class="game-delete" onclick="deleteGame('${game.id}')" title="Delete">
+        <button class="game-delete" onclick="deleteGame(${game.id})" title="Delete">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>`;
@@ -602,38 +610,39 @@ function selectWinner(el) {
   document.getElementById('game-winner').value = el.dataset.winner;
 }
 
-function saveGame(e) {
+async function saveGame(e) {
   e.preventDefault();
   const winner = document.getElementById('game-winner').value;
   if (!winner) { alert('Please select a winner!'); return; }
 
   const game = {
-    id: Date.now().toString(),
     date: document.getElementById('game-date').value,
     winner: winner,
     score: document.getElementById('game-score').value.trim()
   };
 
-  const games = loadGames();
-  games.push(game);
-  saveGames(games);
+  const { error } = await supabase.from('games').insert([game]);
+  if (error) {
+    alert('Error saving game: ' + error.message);
+    return;
+  }
+
   closeModal();
-  render();
+  await loadGames();
 }
 
-function deleteGame(id) {
+async function deleteGame(id) {
   if (!confirm('Delete this game?')) return;
-  const games = loadGames();
-  const index = games.findIndex(g => g.id === id);
-  if (index > -1) {
-    games.splice(index, 1);
-    saveGames(games);
-    render();
+  const { error } = await supabase.from('games').delete().eq('id', id);
+  if (error) {
+    alert('Error deleting game: ' + error.message);
+    return;
   }
+  await loadGames();
 }
 
 // Init
-render();
+loadGames();
 </script>
 </body>
 </html>
