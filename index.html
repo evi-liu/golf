@@ -502,16 +502,17 @@ header p {
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
 const SUPABASE_URL = 'https://dlzdstnyrckyqavmuzvh.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_lm0W8OFgtXJq1ADQFFCc9g_M5-vy58w';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsemRzdG55cmNreXFhdm11enZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5OTY2MTUsImV4cCI6MjA5MzU3MjYxNX0._oBrHqfoMJs0nEAO4ue8qeCbCUXlcdjRnRfggObCBXg';
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let games = [];
 
 async function loadGames() {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('games')
     .select('*')
     .order('date', { ascending: false });
@@ -621,7 +622,7 @@ async function saveGame(e) {
     score: document.getElementById('game-score').value.trim()
   };
 
-  const { error } = await supabase.from('games').insert([game]);
+  const { error } = await db.from('games').insert([game]);
   if (error) {
     alert('Error saving game: ' + error.message);
     return;
@@ -633,7 +634,7 @@ async function saveGame(e) {
 
 async function deleteGame(id) {
   if (!confirm('Delete this game?')) return;
-  const { error } = await supabase.from('games').delete().eq('id', id);
+  const { error } = await db.from('games').delete().eq('id', id);
   if (error) {
     alert('Error deleting game: ' + error.message);
     return;
@@ -643,6 +644,13 @@ async function deleteGame(id) {
 
 // Init
 loadGames();
+
+// Expose to onclick handlers
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.selectWinner = selectWinner;
+window.saveGame = saveGame;
+window.deleteGame = deleteGame;
 </script>
 </body>
 </html>
